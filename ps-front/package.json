@@ -16,6 +16,7 @@
     "@mui/styled-engine-sc": "^5.0.4",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
+    "recharts": "^2.1.6",
     "recoil": "^0.4.1",
     "styled-components": "^5.3.3"
   },

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
-import { nodeListState, pingListState } from "../atoms/api";
-import { fetchNodePingListState, fetchNodeListState } from "../selectors/api";
+import { Ping, nodeListState, pingListState } from "../atoms/api";
+import { fetchNodeListState } from "../selectors/api";
 
 import Button from "@mui/material/Button";
 import List from "@mui/material/List";
@@ -9,28 +9,51 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { LineChart, Line, CartesianGrid, XAxis, YAxis } from "recharts";
+
+interface IPingResponseData {
+  node_name: string;
+  result: boolean;
+  duration: number;
+  created_at: string;
+}
 
 function LogList() {
   const nodeList = useRecoilValue(fetchNodeListState);
   const [pingList, setPingList] = useRecoilState(pingListState);
-  const updatePingList = function (node) {
+  const updatePingList = function (node: string) {
     fetch(`/api/v1/node/pings?node=${node}`)
       .then((res) => res.json())
       .then((json) => {
-        const data = json.data;
-        const header = json.header;
+        const data: IPingResponseData[] = json.data;
+        const header: string[] = json.header;
 
-        let conv_map = {};
-        header.map((h, i) => {
+        let conv_map: { [key: string]: number } = {};
+        header.map((h: string, i: number) => {
           conv_map[h] = i;
         });
         const fmt_data = data.map((r) => {
-          return {
-            node_name: r[conv_map[header.find((h) => h === "node_name")]],
-            result: r[conv_map[header.find((h) => h === "result")]],
-            duration: r[conv_map[header.find((h) => h === "duration")]],
-            created_at: r[conv_map[header.find((h) => h === "created_at")]],
+          const dt = new Date(Date.parse(r.created_at));
+          const dtf =
+            ("0" + (dt.getMonth() + 1)).slice(-2) +
+            "/" +
+            ("0" + (dt.getDate())).slice(-2);
+          const tf =
+            ("0" + dt.getHours()).slice(-2) +
+            ":" +
+            ("0" + dt.getMinutes()).slice(-2) +
+            ":" +
+            ("0" + dt.getSeconds()).slice(-2);
+
+          const rst: Ping = {
+            node_name: r.node_name,
+            result: r.result,
+            duration: r.duration,
+            created_at: r.created_at,
+            date: dtf,
+            time: tf,
           };
+          return rst;
         });
         setPingList(fmt_data);
       });
@@ -47,21 +70,19 @@ function LogList() {
         ))}
       </List>
       <hr />
-      <List>
-        {pingList.map((p) => {
-          const sub_label = `応答時間: ${p.duration}, 実行時間: ${p.created_at}`;
-          return (
-            <ListItem>
-              <ListItemButton>
-                <ListItemText
-                  primary={p.result ? "成功" : "失敗"}
-                  secondary={sub_label}
-                />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+      {pingList.length > 0 ? (
+        <div>
+          <h2>{pingList[0].date}</h2>
+          <LineChart width={800} height={400} data={pingList}>
+            <Line type="monotone" dataKey="duration" stroke="#8884d8" />
+            <CartesianGrid stroke="#ccc" />
+            <XAxis dataKey="time" />
+            <YAxis />
+          </LineChart>
+        </div>
+      ) : (
+        <div></div>
+      )}
     </div>
   );
 }

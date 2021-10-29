@@ -36,11 +36,23 @@ get "/api/v1/node/pings" do
   path = "./nodes/#{node}.csv"
   return er_j.to_json unless File.exists?(path)
 
-  data = CSV.read(path)
-  lines = data[-100...-1]
+  conv_map = {}
+  header.each_with_index do |h, i|
+    conv_map[i] = h
+  end
+
+  rows = CSV.read(path)
+  lines = rows[-100...-1]
+  data = lines.map do |line|
+    rst = {}
+    line.each_with_index do |k, i|
+      rst[conv_map[i]] = k
+    end
+    rst
+  end
   {
     header: header,
-    data: lines,
+    data: data,
     count: 100,
     status: 200,
     msg: "",

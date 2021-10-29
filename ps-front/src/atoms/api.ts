@@ -1,10 +1,12 @@
 import { atom, selector } from "recoil";
 
-interface Ping {
+export type Ping = {
   node_name: string;
   result: boolean;
   duration: number;
   created_at: string;
+  date: string;
+  time: string;
 }
 
 export const nodeListState = atom({
