@@ -1,0 +1,6 @@
+/nodes
+config.json
+vendor/
+node_modules/
+Gemfile.lock
+public/
