@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "tscw": "tsc --watch",
+    "devv": "NODE_ENV=development vite build --watch",
     "serve": "vite preview"
   },
   "dependencies": {
