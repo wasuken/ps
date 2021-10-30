@@ -60,6 +60,7 @@ function LogList() {
   };
   return (
     <div>
+      <h2>Hosts</h2>
       <List>
         {nodeList.map((node) => (
           <ListItem>
